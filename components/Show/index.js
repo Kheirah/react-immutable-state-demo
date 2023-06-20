@@ -2,6 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import Episode from "../Episode";
 import Season from "../Season";
+import { useImmer } from "use-immer";
 
 const Title = styled.h1`
   text-decoration: underline;
@@ -19,11 +20,13 @@ const StyledShow = styled.div`
 `;
 
 export default function Show({ initialSeasons = [] }) {
-  const [seasons, setSeasons] = useState(initialSeasons);
+  /* const [seasons, setSeasons] = useState(initialSeasons); */
+  const [seasons, updateSeasons] = useImmer(initialSeasons);
 
   function handleToggleHasSeen(seasonNumber, episodeNumber) {
-    setSeasons((prevSeasons) => {
-      const season = prevSeasons.find(({ number }) => number === seasonNumber);
+    /* This does not work */
+    /* setSeasons((currentSeasons) => {
+      const season = currentSeasons.find(({ number }) => number === seasonNumber);
 
       const episode = season.episodes.find(
         ({ number }) => number === episodeNumber
@@ -31,10 +34,38 @@ export default function Show({ initialSeasons = [] }) {
 
       episode.hasSeen = !episode.hasSeen;
 
-      console.log(prevSeasons);
+      console.log(currentSeasons);
 
-      return prevSeasons;
-    });
+      return currentSeasons;
+    }); */
+
+    /* Fix */
+    /* setSeasons(
+      seasons.map((season) => {
+        if (season.number !== seasonNumber) {
+          return season;
+        }
+        return {
+          ...season,
+          episodes: season.episodes.map((episode) => {
+            if (episode.number !== episodeNumber) {
+              return episode;
+            }
+            return {
+              ...episode,
+              hasSeen: !episode.hasSeen,
+            };
+          }),
+        };
+      })
+    ); */
+
+    /* Ease of use */
+    updateSeasons((draft) => {
+      const season = draft.find(({number}) => number === seasonNumber);
+      const episode = season.episodes.find(({number}) => number === episodeNumber);
+      episode.hasSeen = !episode.hasSeen;
+    })
   }
 
   return (
